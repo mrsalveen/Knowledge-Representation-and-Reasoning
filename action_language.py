@@ -24,10 +24,12 @@ class State:
 class Action:
     def __init__(self, name, preconditions, effects, agents):
         self.name = name
+        # Preconditions and effects are dictionaries of the form {fluent: value}
         self.preconditions = preconditions
         self.effects = effects
         # Agents that can execute this action
         self.agents = agents
+        # Involved Agents in the execution of this action
         self.involved_agents = set()
 
     def is_executable(self, state, agent):
