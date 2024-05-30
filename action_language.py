@@ -22,23 +22,28 @@ class State:
 
 
 class Action:
-    def __init__(self, name, preconditions, effects, agent):
+    def __init__(self, name, preconditions, effects, agents):
         self.name = name
         self.preconditions = preconditions
         self.effects = effects
-        self.agent = agent
+        # Agents that can execute this action
+        self.agents = agents
+        self.involved_agents = set()
 
-    def is_executable(self, state):
+    def is_executable(self, state, agent):
+        if agent not in self.agents:
+            return False
         for fluent, value in self.preconditions.items():
             if state.get_fluent_value(fluent) != value:
                 return False
+        self.involved_agents.add(agent)
         return True
 
-    def execute(self, state):
-        if self.is_executable(state):
+    def execute(self, state, agent):
+        if self.is_executable(state, agent):
             for fluent, value in self.effects.items():
                 state.update_fluent(fluent, value)
         return state
 
     def __repr__(self):
-        return f"Action({self.name}, Pre: {self.preconditions}, Eff: {self.effects}, Agent: {self.agent})"
+        return f"Action({self.name}, Pre: {self.preconditions}, Eff: {self.effects}, Agents: {self.agents})"
