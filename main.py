@@ -1,15 +1,24 @@
 import action_language as al
 
-def print_execution(state, program):
+def print_execution(state, program, goal):
     involved_agents = set()
     print("=====================Executing actions======================")
     print(f"Initial state: {state}")
     for action, agent in program:
-        state = action.execute(state, agent)
-        involved_agents.update(action.involved_agents)
+        had_effect = action.execute(state, agent)
+        if had_effect:
+            involved_agents.add(agent)
         print(f"After {agent} performs {action.name}: {state}")
     print("============================================================")
-    return involved_agents
+
+    # Check if the goal is reached
+    goal_reached = all(state.get_fluent_value(fluent) == value for fluent, value in goal.items())
+
+    if goal_reached:
+        print(f"Goal {goal} was reached.")
+    else:
+        print(f"Goal {goal} was not reached.")
+    print(f"Agents involved in the program: {involved_agents}")
 
 def main():
     # Initial state
@@ -53,8 +62,11 @@ def main():
         (shoot_canon, 'agent2'),
     ]
 
-    involved_agents = print_execution(state, program2)
-    print(f"Agents involved in the program: {involved_agents}")
+    # Define the goal
+    goal1 = {'wall_demolished': True, 'canon_loaded': False}
+    goal2 = {'canon_loaded': True}
+
+    print_execution(state, program2, goal1)
 
 
 if __name__ == "__main__":
