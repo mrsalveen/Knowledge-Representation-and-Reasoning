@@ -1,13 +1,23 @@
 import action_language as al
+# Add After agent1 performs shoot_canon: {'wall_demolished': False, 'canon_loaded': False}
+# With what was changed and if the agent was involved in the program.
 
+# Fix agent1 not being involved in the program
+
+# STREAMLIT
+# Adding agents as a separate tab.
+# Add the way goals are added 
+# Description of each step when executing program
 def print_execution(state, program, goal):
     involved_agents = set()
     print("=====================Executing actions======================")
     print(f"Initial state: {state}")
+
     for action, agent in program:
         had_effect = action.execute(state, agent)
         if had_effect:
             involved_agents.add(agent)
+
         print(f"After {agent} performs {action.name}: {state}")
     print("============================================================")
 

@@ -1,12 +1,3 @@
-class Fluent:
-    def __init__(self, name, value=True):
-        self.name = name
-        self.value = value
-
-    def __repr__(self):
-        return f"{self.name}: {self.value}"
-
-
 class State:
     def __init__(self, fluents=None):
         self.fluents = fluents if fluents is not None else {}
