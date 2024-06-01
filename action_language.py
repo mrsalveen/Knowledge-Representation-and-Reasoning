@@ -8,8 +8,15 @@ class State:
     def update_fluent(self, name, value):
         self.fluents[name] = value
 
+    def get_fluents(self):
+        return self.fluents
+
     def __repr__(self):
         return str(self.fluents)
+    
+    def copy(self):
+        # Create a new State instance with a copy of the fluents dictionary
+        return State(self.fluents.copy())
 
 
 class Action:
@@ -36,7 +43,7 @@ class Action:
         if self.is_executable(state, agent):
             for fluent, value in self.effects.items():
                 state.update_fluent(fluent, value)
-        return state
+        # return state
 
     def __repr__(self):
         return f"Action({self.name}, Pre: {self.preconditions}, Eff: {self.effects}, Agents: {self.agents})"
