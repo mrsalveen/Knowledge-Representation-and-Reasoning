@@ -1,24 +1,37 @@
 import streamlit as st
 from action_language import Action, State  # Replace 'your_module' with the name of the module where Action and State are defined
 import pandas as pd
+
 # Initialize session state
 if 'fluent_dict' not in st.session_state:
     st.session_state['fluent_dict'] = {}
+if 'fluent_count' not in st.session_state:
+    st.session_state['fluent_count'] = 1
+if 'agent_list' not in st.session_state:
+    st.session_state['agent_list'] = []
+if 'agent_count' not in st.session_state:
+    st.session_state['agent_count'] = 1
 if 'goal_dict' not in st.session_state:
     st.session_state['goal_dict'] = {}
 if 'action_dict' not in st.session_state:
     st.session_state['action_dict'] = {}
 if 'program_dict' not in st.session_state:
     st.session_state['program_dict'] = {}
-if 'fluent_count' not in st.session_state:
-    st.session_state['fluent_count'] = 1
+
+# Tabs
+fluents, agents, actions, programs = st.tabs(['Fluents', 'Agents', 'Actions', 'Programs'])
 
 # Function to add a new fluent text field
 def add_fluent():
     st.session_state['fluent_count'] += 1
+    st.experimental_rerun()
+
 
 def remove_fluent():
     st.session_state['fluent_count'] -= 1
+    st.experimental_rerun()
+
+
 # Function to save all fluents
 def save_fluents():
     for i in range(st.session_state['fluent_count']):
@@ -27,10 +40,6 @@ def save_fluents():
         if fluent_name:  # Only save if name is not empty
             st.session_state['fluent_dict'][fluent_name] = fluent_value
     st.success("Fluents saved successfully!")
-
-
-# Tabs
-fluents, agents, actions, programs = st.tabs(['Fluents', 'Agents', 'Actions', 'Programs'])
 
 with fluents:
     # Fluent
@@ -42,17 +51,64 @@ with fluents:
         with col1:
             st.text_input('Fluent Name', key=f'fluent_name_{i}')
         with col2:
-            st.checkbox('True (else False)', key=f'fluent_value_{i}')
+            st.toggle("False/True", key=f'fluent_value_{i}')
     
-    # Button to add new fluent fields
-    if st.button('Add a New Fluent'):
-        add_fluent()
-        st.experimental_rerun()
+    # Button to add/remove new fluent fields
+    col1, col2 = st.columns([1,1])
+    with col1:
+        if st.button('Add a New Fluent'):
+            add_fluent()
+    with col2:
+        if st.button('Remove a Fluent'):
+            remove_fluent()
     
     # Save button
-    if st.button('Save'):
+    if st.button('Save Fluents'):
         save_fluents()
         st.write(st.session_state['fluent_dict'])
+
+# Function to add a new agent
+def add_agent():
+    st.session_state['agent_count'] += 1
+    st.experimental_rerun()
+
+
+# Function to remove an agent
+def remove_agent(index):
+    st.session_state['agent_count'] -= 1
+    st.experimental_rerun()
+
+
+# Function to save all agents
+def save_agents():
+    for i in range(st.session_state['agent_count']):
+        agent_name = st.session_state[f'agent_name_{i}']
+        if agent_name:  # Only save if name is not empty
+            st.session_state['agent_list'].append(agent_name)
+    st.success("Fluents saved successfully!")
+
+
+with agents:
+    # Fluent
+    st.header('Agents')
+    
+    for i in range(st.session_state['agent_count']):
+        st.text_input('Agent Name', key=f'agent_name_{i}')
+
+    col1, col2 = st.columns([1,1])
+    with col1:
+        if st.button('Add a New Agent'):
+            add_agent()
+            st.experimental_rerun()
+    with col2:
+        if st.button('Remove Agent'):
+            remove_agent()
+            st.experimental_rerun()
+
+    # Save button
+    if st.button('Save Agents'):
+        save_agents()
+        st.write(st.session_state['agent_list'])
 
 with actions:
     # Action
