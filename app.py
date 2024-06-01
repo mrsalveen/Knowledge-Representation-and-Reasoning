@@ -14,9 +14,9 @@ if 'program_dict' not in st.session_state:
 
 
 # Tabs
-fluent, action, program = st.tabs(['Fluent', 'Action', 'Program'])
+fluents, agents, actions, programs = st.tabs(['Fluents', 'Agents', 'Actions', 'Programs'])
 
-with fluent:
+with fluents:
     #Fluent
     st.header('Fluent')
     fluent_name = st.text_input('Enter a name for the Fluent', key='fluent_name')
@@ -28,7 +28,7 @@ with fluent:
 
 
     # ...
-with action:
+with actions:
     # Action
     st.header('Action')
     action_name = st.text_input('Enter a name for the Action', key='action_name')
@@ -88,7 +88,7 @@ with action:
         st.markdown(f'**Effects:** {", ".join([f"{k}={v}" for k, v in action.effects.items()])}')
         st.markdown(f'**Agents:** {", ".join(action.agents)}')
         st.markdown("---")
-with program:
+with programs:
     #Program
     st.header('Program')
     program_name = st.text_input('Enter a name for the Program', key='program_name')

@@ -1,4 +1,5 @@
 import action_language as al
+# TODO Changed fluents are not properly working
 
 # STREAMLIT
 # Adding agents as a separate tab.
@@ -15,7 +16,14 @@ def print_execution(state, program, goal):
         new_fluents = state.get_fluents().copy()
         if last_fluents != new_fluents:
             agent_had_effect = True 
-            changed_fluents = {key: (last_fluents[key], new_fluents[key]) for key in last_fluents if last_fluents[key] != new_fluents[key]}
+            changed_fluents = {}
+            # Assuming that all states have same fluents
+            # TODO: Fix this code below. program 1,2 not working
+            for key in last_fluents.keys():
+                if last_fluents.get(key) != new_fluents.get(key):
+                    changed_fluents[key] = (last_fluents.get(key), new_fluents.get(key))
+
+            # changed_fluents = {key: (last_fluents[key], new_fluents[key]) for key in last_fluents if last_fluents[key] != new_fluents[key]}
         if agent_had_effect:
             involved_agents.add(agent)
             print(f"After {agent} performs {action.name} state changed to: {state}")
@@ -23,7 +31,6 @@ def print_execution(state, program, goal):
         else:
             print(f"After {agent} performs {action.name} state does NOT change: {state}")
     print("============================================================")
-
     # Check if the goal is reached
     goal_reached = all(state.get_fluent_value(fluent) == value for fluent, value in goal.items())
 
@@ -75,11 +82,18 @@ def main():
         (shoot_canon, 'agent2'),
     ]
 
+    program3 = [
+        (load_canon, 'agent2'),
+        (shoot_canon, 'agent2'),
+        (load_canon, 'agent2'),
+        (shoot_canon, 'agent2'),
+    ]
+
     # Define the goal
     goal1 = {'wall_demolished': True, 'canon_loaded': False}
     goal2 = {'canon_loaded': True}
 
-    print_execution(state, program2, goal1)
+    print_execution(state, program3, goal1)
 
 
 if __name__ == "__main__":
