@@ -10,24 +10,50 @@ if 'action_dict' not in st.session_state:
     st.session_state['action_dict'] = {}
 if 'program_dict' not in st.session_state:
     st.session_state['program_dict'] = {}
+if 'fluent_count' not in st.session_state:
+    st.session_state['fluent_count'] = 1
 
+# Function to add a new fluent text field
+def add_fluent():
+    st.session_state['fluent_count'] += 1
+
+def remove_fluent():
+    st.session_state['fluent_count'] -= 1
+# Function to save all fluents
+def save_fluents():
+    for i in range(st.session_state['fluent_count']):
+        fluent_name = st.session_state[f'fluent_name_{i}']
+        fluent_value = st.session_state[f'fluent_value_{i}']
+        if fluent_name:  # Only save if name is not empty
+            st.session_state['fluent_dict'][fluent_name] = fluent_value
+    st.success("Fluents saved successfully!")
 
 
 # Tabs
 fluents, agents, actions, programs = st.tabs(['Fluents', 'Agents', 'Actions', 'Programs'])
 
 with fluents:
-    #Fluent
+    # Fluent
     st.header('Fluent')
-    fluent_name = st.text_input('Enter a name for the Fluent', key='fluent_name')
-    fluent_value = st.checkbox('True (else False)', key='fluent_value')
+    
+    # Render the text inputs for each fluent
+    for i in range(st.session_state['fluent_count']):
+        col1, col2 = st.columns([3, 2])
+        with col1:
+            st.text_input('Fluent Name', key=f'fluent_name_{i}')
+        with col2:
+            st.checkbox('True (else False)', key=f'fluent_value_{i}')
+    
+    # Button to add new fluent fields
+    if st.button('Add a New Fluent'):
+        add_fluent()
+        st.experimental_rerun()
+    
+    # Save button
+    if st.button('Save'):
+        save_fluents()
+        st.write(st.session_state['fluent_dict'])
 
-    if st.button('Add Fluent'):
-        st.session_state['fluent_dict'][fluent_name] = fluent_value
-        st.write(f'Fluent {fluent_name} added')
-
-
-    # ...
 with actions:
     # Action
     st.header('Action')
