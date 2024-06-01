@@ -43,7 +43,6 @@ class Action:
         if self.is_executable(state, agent):
             for fluent, value in self.effects.items():
                 state.update_fluent(fluent, value)
-        # return state
 
     def __repr__(self):
         return f"Action({self.name}, Pre: {self.preconditions}, Eff: {self.effects}, Agents: {self.agents})"

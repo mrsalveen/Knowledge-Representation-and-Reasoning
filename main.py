@@ -15,11 +15,12 @@ def print_execution(state, program, goal):
         new_fluents = state.get_fluents().copy()
         if last_fluents != new_fluents:
             agent_had_effect = True 
+            changed_fluents = {key: (last_fluents[key], new_fluents[key]) for key in last_fluents if last_fluents[key] != new_fluents[key]}
         if agent_had_effect:
             involved_agents.add(agent)
             print(f"After {agent} performs {action.name} state changed to: {state}")
+            print("Changed fluents: ", changed_fluents)
         else:
-            pass
             print(f"After {agent} performs {action.name} state does NOT change: {state}")
     print("============================================================")
 
