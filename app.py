@@ -19,7 +19,8 @@ if 'action_count' not in st.session_state:
     st.session_state['action_count'] = 1
 if 'program_dict' not in st.session_state:
     st.session_state['program_dict'] = {}
-
+if 'program_count' not in st.session_state:
+    st.session_state['program_count'] = 1
 # Tabs
 fluents, agents, actions, programs = st.tabs(['Fluents', 'Agents', 'Actions', 'Programs'])
 
@@ -142,17 +143,17 @@ def save_actions():
             action_dict[action_name] = {
                 'preconditions': preconditions,
                 'effects': effects,
-                'agents': agents
+                'action_agents': agents
             }
     st.session_state['action_dict'] = action_dict
 
 def add_precondition(action_index):
-    if f'precondition_count_{action_index}' not in st.session_state:
-        st.session_state[f'precondition_count_{action_index}'] = 1
-        st.experimental_rerun()
-    else:
-        st.session_state[f'precondition_count_{action_index}'] += 1
-        st.experimental_rerun()
+    # if f'precondition_count_{action_index}' not in st.session_state:
+    #     st.session_state[f'precondition_count_{action_index}'] = 1
+    #     st.experimental_rerun()
+    # else:
+    st.session_state[f'precondition_count_{action_index}'] += 1
+    st.experimental_rerun()
 
 def remove_precondition(action_index):
     if f'precondition_count_{action_index}' in st.session_state and st.session_state[f'precondition_count_{action_index}'] > 1:
@@ -195,9 +196,8 @@ def save_effect(action_index):
     return effects
 
 
-with actions:
+with actions: # TODO: Fix effects not being added if > 1. Only 1 effect is saved
     st.header('Actions')
-
 
     for i in range(st.session_state['action_count']):
         st.write(f'**Action {i+1}**')
@@ -213,9 +213,9 @@ with actions:
 
         # PRECONDITIONS
         if f'precondition_count_{i}' not in st.session_state:
-            st.session_state[f'precondition_count_{i}'] = 1
+            st.session_state[f'precondition_count_{i}'] = 0
+        precondition_columns = st.columns(2)
         for j in range(st.session_state[f'precondition_count_{i}']):
-            precondition_columns = st.columns(2)
             action_preconditions_fluent = precondition_columns[0].selectbox('Select precondition fluent', fluent_options, key=f'action_preconditions_fluent_{i}_{j}')
             action_preconditions_value = precondition_columns[1].selectbox('Select precondition value', value_options, key=f'action_preconditions_value_{i}_{j}')
 
@@ -243,7 +243,6 @@ with actions:
         agents_options = st.session_state['agent_list']
         action_agents = st.multiselect('Select agents for this Action', agents_options, key=f'action_agents_{i}')
         # action_agents = st.text_input('Enter agents for the Action (comma-separated)', key='action_agents', placeholder='Example: agent1,agent2')
-        
         action_dict = st.session_state['action_dict']
 
     action_columns = st.columns(2)
@@ -260,82 +259,88 @@ with actions:
     st.header('List of Actions')
     for action_name, action in st.session_state['action_dict'].items():
         st.markdown(f'**Action Name:** {action_name}')
-        st.markdown(f'**Preconditions:** {", ".join([f"{k}={v}" for k, v in action.preconditions.items()])}')
-        st.markdown(f'**Effects:** {", ".join([f"{k}={v}" for k, v in action.effects.items()])}')
-        st.markdown(f'**Agents:** {", ".join(action.agents)}')
-        st.markdown("---")
+        st.markdown(f'**Preconditions:** {action["preconditions"]}')
+        st.markdown(f'**Effects:** {action["effects"]}')
+        st.markdown(f'**Agents:** {action["action_agents"]}')
 
 ############################################################################################################
 ############################################################################################################
 
+def add_program_step(program_index):
+    st.session_state[f'program_step_count_{i}'] += 1
+    st.experimental_rerun()
 
 with programs:
     st.header('Programs')
-    program_name = st.text_input('Enter a name for the Program', key='program_name')
 
-    # Get the list of actions and agents
-    action_options = list(st.session_state['action_dict'].keys())
-    # Create a set of all agents
-    agent_set = set()
-    for action in st.session_state['action_dict'].values():
-        agent_set.update(action.agents)  # Assuming 'agents' is an attribute of 'Action'
+    for i in range(st.session_state['program_count']):
+        st.write(f'**Program {i+1}**')
 
-    # Convert the set to a list to use it as options for the selectbox
-    agent_options = list(agent_set)
+        program_name = st.text_input('Enter a name for the Program', key=f'program_name_{i}')
 
-    # Create selectboxes for the action and agent
-    selected_action = st.selectbox('Select an action for the step', action_options, key='selected_action')
-    selected_agent = st.selectbox('Select an agent for the step', agent_options, key='selected_agent')
+        # Get the list of actions and agents
+        action_names = list(st.session_state['action_dict'].keys())
+        action_data = list(st.session_state['action_dict'].values())
+        agent_options
+        st.write(action_names)
+        st.write(action_data)
+        st.write(action_data[0]['effects'])
 
-    program_dict = st.session_state.get('program_dict', {})
+        if f'program_step_count_{i}' not in st.session_state:
+            st.session_state[f'program_step_count_{i}'] = 1
+            selected_action = st.selectbox('Select an action for this step', action_names, key=f'selected_action_{i}')
+            selected_agents = st.multiselect('Select an agent for this step', agent_options, key=f'selected_agents_{i}')
 
-    if st.button('Add Step to Program'):
-        if program_name not in program_dict:
-            program_dict[program_name] = []
-        program_dict[program_name].append((st.session_state['action_dict'][selected_action], selected_agent))  # Add the (action, agent) pair to the program
-        st.session_state['program_dict'] = program_dict
-        st.write(f'Step {selected_action}={selected_agent} added to Program {program_name}')
+        program_dict = st.session_state.get('program_dict', {})
 
-    if st.button('Show Program'):
-        # Display the list of programs
-        for program_name, steps in st.session_state['program_dict'].items():
-            st.header(f'Program Name: {program_name}')
-            for step in steps:
-                action, agent = step
-                st.subheader(f'Step: {action.name} by Agent: {agent}')
-                # Create a DataFrame for the action information
-                action_info = pd.DataFrame({
-                    'Preconditions': [", ".join([f"{k}={v}" for k, v in action.preconditions.items()])],
-                    'Effects': [", ".join([f"{k}={v}" for k, v in action.effects.items()])]
-                })
-                st.table(action_info)
-            st.markdown("---")
+#     if st.button('Add Step to the program'):
+#         add_program_step()
+#         # if program_name not in program_dict:
+#         #     program_dict[program_name] = []
+#         # program_dict[program_name].append((st.session_state['action_dict'][selected_action], selected_agent))  # Add the (action, agent) pair to the program
+#         # st.session_state['program_dict'] = program_dict
+#         # st.write(f'Step {selected_action}={selected_agent} added to Program {program_name}')
 
-    # Goal State
-    st.header('Goal State')
+#     if st.button('Show Program'):
+#         # Display the list of programs
+#         for program_name, steps in st.session_state['program_dict'].items():
+#             st.header(f'Program Name: {program_name}')
+#             for step in steps:
+#                 action, agent = step
+#                 st.subheader(f'Step: {action.name} by Agent: {agent}')
+#                 # Create a DataFrame for the action information
+#                 action_info = pd.DataFrame({
+#                     'Preconditions': [", ".join([f"{k}={v}" for k, v in action.preconditions.items()])],
+#                     'Effects': [", ".join([f"{k}={v}" for k, v in action.effects.items()])]
+#                 })
+#                 st.table(action_info)
+#             st.markdown("---")
 
-    goal_name = st.text_input('Enter a name for the Goal', key='goal_name')
-    goal_value = st.checkbox('True (else False)', key='gaol_value')
+#     # Goal State
+#     st.header('Goal State')
 
-    if st.button('Add Goal'):
-        st.session_state['goal_dict'] = {goal_name: goal_value}
-        st.write(f'Goal {fluent_name} added')
+#     goal_name = st.text_input('Enter a name for the Goal', key='goal_name')
+#     goal_value = st.checkbox('True (else False)', key='gaol_value')
 
-    # Execute the program and display the involved agents
-    st.header('Program Execution')
-    selected_program = st.selectbox('Select a program to execute', list(st.session_state['program_dict'].keys()), key='selected_program')
-    if st.button('Execute Program'):
-        state = State(st.session_state['fluent_dict']) # Assuming 'initial_state' is stored in the session state
-        program = st.session_state['program_dict'][selected_program]
-        involved_agents = set()
-        for action, agent in program:
-            had_effect = action.execute(state, agent)  # Assuming 'execute' is a method of 'Action'
-            if had_effect:
-                involved_agents.add(agent)
-        st.write(f'Agents involved in the program: {involved_agents}')
-        # Check if the goal state is achieved
-        goal_achieved = all(state.get_fluent_value(fluent) == value for fluent, value in st.session_state['goal_dict'].items())
-        st.write(f'Goal state achieved: {goal_achieved}')
+#     if st.button('Add Goal'):
+#         st.session_state['goal_dict'] = {goal_name: goal_value}
+#         st.write(f'Goal {fluent_name} added')
+
+#     # Execute the program and display the involved agents
+#     st.header('Program Execution')
+#     selected_program = st.selectbox('Select a program to execute', list(st.session_state['program_dict'].keys()), key='selected_program')
+#     if st.button('Execute Program'):
+#         state = State(st.session_state['fluent_dict']) # Assuming 'initial_state' is stored in the session state
+#         program = st.session_state['program_dict'][selected_program]
+#         involved_agents = set()
+#         for action, agent in program:
+#             had_effect = action.execute(state, agent)  # Assuming 'execute' is a method of 'Action'
+#             if had_effect:
+#                 involved_agents.add(agent)
+#         st.write(f'Agents involved in the program: {involved_agents}')
+#         # Check if the goal state is achieved
+#         goal_achieved = all(state.get_fluent_value(fluent) == value for fluent, value in st.session_state['goal_dict'].items())
+#         st.write(f'Goal state achieved: {goal_achieved}')
 
 # Display the current state of all fluents in the sidebar
 st.sidebar.header('Current State')
