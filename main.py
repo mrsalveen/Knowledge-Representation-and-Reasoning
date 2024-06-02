@@ -17,7 +17,6 @@ def print_execution(state, program, goal):
         if last_fluents != new_fluents:
             agent_had_effect = True 
             changed_fluents = {}
-            # Assuming that all states have same fluents
             # TODO: Fix this code below. program 1,2 not working
             for key in last_fluents.keys():
                 if last_fluents.get(key) != new_fluents.get(key):
