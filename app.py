@@ -215,7 +215,8 @@ def save_effect(action_index):
     return effects
 
 
-with actions: # TODO: Fix effects not being added if > 1. Only 1 effect is saved
+with actions: # TODO: TOCHECK. Check if effects are being added if there are > 1. 
+    # In my prev observations only 1 effect is saved.
     st.header('Actions')
 
     for i in range(st.session_state['action_count']):
