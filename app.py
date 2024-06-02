@@ -34,8 +34,9 @@ def add_fluent():
     st.experimental_rerun()
 
 def remove_fluent():
-    st.session_state['fluent_count'] -= 1
-    st.experimental_rerun()
+    if st.session_state['fluent_count'] > 1:
+        st.session_state['fluent_count'] -= 1
+        st.experimental_rerun()
 
 # Function to save all fluents
 def save_fluents():
@@ -83,8 +84,9 @@ def add_agent():
 
 # Function to remove an agent
 def remove_agent():
-    st.session_state['agent_count'] -= 1
-    st.experimental_rerun()
+    if st.session_state['agent_count'] > 1:
+        st.session_state['agent_count'] -= 1
+        st.experimental_rerun()
 
 # Function to save all agents
 def save_agents():
@@ -129,8 +131,9 @@ def add_action():
     st.experimental_rerun()
 
 def remove_action():
-    st.session_state['action_count'] -= 1
-    st.experimental_rerun()
+    if st.session_state['action_count'] > 1:
+        st.session_state['action_count'] -= 1
+        st.experimental_rerun()
 
 def save_actions():
     action_dict = {}
@@ -267,8 +270,22 @@ with actions: # TODO: Fix effects not being added if > 1. Only 1 effect is saved
 ############################################################################################################
 
 def add_program_step(program_index):
-    st.session_state[f'program_step_count_{i}'] += 1
+    st.session_state[f'program_step_count_{program_index}'] += 1
     st.experimental_rerun()
+
+def remove_program_step(program_index):
+    if st.session_state[f'program_step_count_{program_index}'] > 1:
+        st.session_state[f'program_step_count_{program_index}'] -= 1
+        st.experimental_rerun()
+
+def add_program():
+    st.session_state['program_count'] += 1
+    st.experimental_rerun()
+
+def remove_program():
+    if st.session_state['program_count'] > 1:
+        st.session_state['program_count'] -= 1
+        st.experimental_rerun()
 
 with programs:
     st.header('Programs')
@@ -281,18 +298,32 @@ with programs:
         # Get the list of actions and agents
         action_names = list(st.session_state['action_dict'].keys())
         action_data = list(st.session_state['action_dict'].values())
-        agent_options
-        st.write(action_names)
-        st.write(action_data)
-        st.write(action_data[0]['effects'])
+        agent_options = st.session_state['agent_list']
+        # st.write(action_names)
+        # st.write(action_data)
+        # st.write(action_data[0]['effects'])
 
         if f'program_step_count_{i}' not in st.session_state:
             st.session_state[f'program_step_count_{i}'] = 1
-            selected_action = st.selectbox('Select an action for this step', action_names, key=f'selected_action_{i}')
-            selected_agents = st.multiselect('Select an agent for this step', agent_options, key=f'selected_agents_{i}')
+        for j in range(st.session_state[f'program_step_count_{i}']):
+            program_step_columns = st.columns(2)
+            selected_action = program_step_columns[0].selectbox('Select an action for this step', action_names, key=f'selected_action_{i}_{j}')
+            selected_agents = program_step_columns[1].multiselect('Select an agent for this step', agent_options, key=f'selected_agents_{i}_{j}')
 
         program_dict = st.session_state.get('program_dict', {})
 
+        if program_step_columns[0].button('Add Step to the program', key=f'add_program_step_{i}_{j}'):
+            add_program_step(i)
+        if program_step_columns[1].button('Remove Step', key=f'remove_program_step_{i}_{j}'):
+            remove_program_step(i)
+
+    if program_step_columns[0].button('Add New Program', key=f'add_program_{i}'):
+        add_program()
+    if program_step_columns[1].button('Remove Program', key=f'remove_program_{i}'):
+        remove_program()
+
+    if st.button('Save', type='primary', key=f'save_program_{i}'):
+        pass
 #     if st.button('Add Step to the program'):
 #         add_program_step()
 #         # if program_name not in program_dict:
