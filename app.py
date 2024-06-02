@@ -17,10 +17,6 @@ if 'action_dict' not in st.session_state:
     st.session_state['action_dict'] = {}
 if 'action_count' not in st.session_state:
     st.session_state['action_count'] = 1
-if 'precondition_count_0' not in st.session_state:
-    st.session_state['precondition_count_0'] = 1
-if 'effect_count_0' not in st.session_state:
-    st.session_state['effect_count_0'] = 1
 if 'program_dict' not in st.session_state:
     st.session_state['program_dict'] = {}
 
@@ -119,7 +115,7 @@ with agents:
             st.experimental_rerun()
 
     # Save button
-    if st.button('Save Agents', type='primary'):
+    if st.button('Save', type='primary', key='save_agents'):
         save_agents()
         st.write(st.session_state['agent_list'])
 
@@ -131,7 +127,7 @@ def add_action():
     st.session_state['action_count'] += 1
     st.experimental_rerun()
 
-def add_action():
+def remove_action():
     st.session_state['action_count'] -= 1
     st.experimental_rerun()
 
@@ -141,7 +137,7 @@ def save_actions():
         action_name = st.session_state.get(f'action_name_{i}', '')
         preconditions = save_preconditions(i)
         effects = save_effect(i)
-        agents = st.session_state.get('action_agents', [])
+        agents = st.session_state.get(f'action_agents_{i}', [])
         if action_name:
             action_dict[action_name] = {
                 'preconditions': preconditions,
@@ -202,7 +198,9 @@ def save_effect(action_index):
 with actions:
     st.header('Actions')
 
+
     for i in range(st.session_state['action_count']):
+        st.write(f'**Action {i+1}**')
         precondition_count = 1
         effect_count = 1
 
@@ -214,47 +212,49 @@ with actions:
         value_options = [True, False]
 
         # PRECONDITIONS
+        if f'precondition_count_{i}' not in st.session_state:
+            st.session_state[f'precondition_count_{i}'] = 1
         for j in range(st.session_state[f'precondition_count_{i}']):
             precondition_columns = st.columns(2)
             action_preconditions_fluent = precondition_columns[0].selectbox('Select precondition fluent', fluent_options, key=f'action_preconditions_fluent_{i}_{j}')
             action_preconditions_value = precondition_columns[1].selectbox('Select precondition value', value_options, key=f'action_preconditions_value_{i}_{j}')
 
-        if precondition_columns[0].button('Add Precondition'):
+        if precondition_columns[0].button('Add Precondition', key=f'action_preconditions_fluent_{i}'):
             add_precondition(i)
 
-        if precondition_columns[1].button('Remove Precondition'):
+        if precondition_columns[1].button('Remove Precondition', key=f'action_preconditions_value_{i}'):
             remove_precondition(i)
 
-        if st.button('Save Precondition'):
-            save_preconditions(i)
-
         # EFFECTS
+        if f'effect_count_{i}' not in st.session_state:
+            st.session_state[f'effect_count_{i}'] = 1
         for j in range(st.session_state[f'effect_count_{i}']):
             effect_columns = st.columns(2)
             action_effects_fluent = effect_columns[0].selectbox('Select effect fluent for the Action', fluent_options, key=f'action_effects_fluent_{i}_{j}')
             action_effects_value = effect_columns[1].selectbox('Select effect value for the Action', value_options, key=f'action_effects_value_{i}_{j}')
 
-        if effect_columns[0].button('Add Effect'):
+        if effect_columns[0].button('Add Effect', key=f'action_effects_fluent_{i}'):
             add_effect(i)
 
-        if effect_columns[1].button('Remove Effect'):
+        if effect_columns[1].button('Remove Effect', key=f'action_effects_value_{i}'):
             remove_effect(i)
-
-        if st.button('Save Effect'):
-            save_effect(i)
 
         # AGENTS
         agents_options = st.session_state['agent_list']
-        action_agents = st.multiselect('Select agents for this Action', agents_options, key='action_agents')
+        action_agents = st.multiselect('Select agents for this Action', agents_options, key=f'action_agents_{i}')
         # action_agents = st.text_input('Enter agents for the Action (comma-separated)', key='action_agents', placeholder='Example: agent1,agent2')
         
         action_dict = st.session_state['action_dict']
 
-        if st.button('Add Action'):
-            add_action()
+    action_columns = st.columns(2)
+    if action_columns[0].button('Add Action', key=f'add_action_{i}'):
+        add_action()
 
-        if st.button('Save Actions', type='primary'):
-            save_actions()
+    if action_columns[1].button('Remove Action', key=f'remove_action_{i}'):
+        remove_action()
+
+    if st.button('Save', type='primary', key=f'save_action_{i}'):
+        save_actions()
 
     # Display the list of actions
     st.header('List of Actions')
