@@ -74,7 +74,7 @@ def add_agent():
 
 
 # Function to remove an agent
-def remove_agent(index):
+def remove_agent():
     st.session_state['agent_count'] -= 1
     st.experimental_rerun()
 
