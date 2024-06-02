@@ -414,6 +414,8 @@ with execution:
                 # for key in last_fluents.keys():
                 #     if last_fluents.get(key) != new_fluents.get(key):
                 #         changed_fluents[key] = (last_fluents.get(key), new_fluents.get(key))
+            # TODO: agent_had_effect doesnt work properly. even though new state is correct
+            # the state changed wording can be wrong
             if agent_had_effect:
                 involved_agents.add(agent)
                 st.write(f"After {agent} performs {action.name} state changed to: {state}")
