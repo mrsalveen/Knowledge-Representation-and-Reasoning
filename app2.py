@@ -13,28 +13,31 @@ if 'program_dict' not in st.session_state:
 if 'goals_dict' not in st.session_state:
     st.session_state['goals_dict'] = {}
 
-# Parse input functions
 def parse_initially_statements(text):
-    initial_fluents = {}
+    initial_state = {}
     for line in text.split('\n'):
-        if line.startswith('initially'):
-            parts = line.split(' ')
-            fluent = parts[1]
-            initial_fluents[fluent] = True  # Assuming initially statements mean the fluent is True
-    return initial_fluents
+        if 'initially' in line:
+            parts = line.split('initially ')[1].split(' ')
+            
+            fluent = parts[len(parts)-1]
+            value = not ('NOT' in parts)
+            initial_state[fluent] = value
+    return initial_state
 
 def parse_causes_statements(text):
     actions = {}
     for line in text.split('\n'):
         if 'causes' in line:
-            parts = line.split(' ')
-            action_name = parts[0]
-            fluent = parts[2]
-            condition = parts[-1]
-            if action_name not in actions:
-                actions[action_name] = Action(action_name, {condition: True}, {fluent: True}, [])
+            parts = line.split('causes ')
+            action = parts[0].strip()
+            effects = parts[1].split(' if ')[0].split(', ')
+            
+            if 'if' in line:
+                preconditions = parts[1].split(' if ')[1].split(', ')
             else:
-                actions[action_name].effects[fluent] = True
+                preconditions = []
+            actions[action] = {'effects': {effect.replace('NOT ', ''): not ('NOT' in effect) for effect in effects},
+                               'preconditions': {precondition.replace('NOT ', ''): not ('NOT' in precondition) for precondition in preconditions}}
     return actions
 
 def parse_after_statements(text):
@@ -75,12 +78,12 @@ st.write(st.session_state['fluent_dict'])
 st.header('Actions')
 for action_name, action in st.session_state['action_dict'].items():
     st.write(f'**Action Name:** {action_name}')
-    st.write(f'**Preconditions:** {action.preconditions}')
-    st.write(f'**Effects:** {action.effects}')
+    st.json(action)
 
 # Display program
 st.header('Program')
 st.write(st.session_state['program_dict']['executed_program'])
+
 
 # Execute the program
 if st.button('Execute Program'):
@@ -90,26 +93,21 @@ if st.button('Execute Program'):
     last_fluents = state.get_fluents().copy()
     st.write("=====================Executing actions======================")
     st.write(f"Initial state: {state}")
-    for action_name, agent in program_data:
+    for steps in program_data:
         agent_had_effect = False
-        action = st.session_state['action_dict'][action_name]
-        action.execute(state, agent)
+        action = Action(steps['action'], st.session_state['action_dict'][steps['action']]['preconditions'], st.session_state['action_dict'][steps['action']]['effects'], steps['agent'])
+        action.execute(state, steps['agent'])
         new_fluents = state.get_fluents().copy()
         if last_fluents != new_fluents:
             agent_had_effect = True
             changed_fluents = {key: new_fluents[key] for key in last_fluents if last_fluents[key] != new_fluents[key]}
         if agent_had_effect:
-            involved_agents.add(agent)
-            st.write(f"After {agent} performs {action.name} state changed to: {state}")
+            involved_agents.add(steps['agent'])
+            st.write(f"After {steps['agent']} performs {action.name} state changed to: {state}")
         else:
-            st.write(f"After {agent} performs {action.name} state does NOT change: {state}")
+            st.write(f"After {steps['agent']} performs {action.name} state does NOT change: {state}")
     st.write(f"Agents involved in the program: {involved_agents}")
-    # Check if the goal state is achieved
-    goal_achieved = all(state.get_fluent_value(fluent) == value for fluent, value in st.session_state['goals_dict'].items())
-    if goal_achieved:
-        st.write(f"Goal {goal_achieved} was reached.")
-    else:
-        st.write(f"Goal {goal_achieved} was not reached.")
+
 
 # Display the current state of all fluents in the sidebar
 st.sidebar.header('Current State')
