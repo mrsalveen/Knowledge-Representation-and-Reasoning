@@ -20,7 +20,7 @@ def parse_initially_statements(text):
             parts = line.split('initially ')[1].split(' ')
             
             fluent = parts[len(parts)-1]
-            value = not ('NOT' in parts)
+            value = not ('not' in parts)
             initial_state[fluent] = value
     return initial_state
 
@@ -36,8 +36,8 @@ def parse_causes_statements(text):
                 preconditions = parts[1].split(' if ')[1].split(', ')
             else:
                 preconditions = []
-            actions[action] = {'effects': {effect.replace('NOT ', ''): not ('NOT' in effect) for effect in effects},
-                               'preconditions': {precondition.replace('NOT ', ''): not ('NOT' in precondition) for precondition in preconditions}}
+            actions[action] = {'effects': {effect.replace('not ', ''): not ('not' in effect) for effect in effects},
+                               'preconditions': {precondition.replace('not ', ''): not ('not' in precondition) for precondition in preconditions}}
     return actions
 
 def parse_after_statements(text):
@@ -50,12 +50,24 @@ def parse_after_statements(text):
             for step in steps:
                 action, agent = step.split(', ')
                 program.append({'action': action, 'agent': agent})
-        else:
+         
             parts = line.split(' ')
-            fluent = parts[0]
-            value = parts[1] == 'True'
+            
+            if 'not' in parts:
+                fluent = parts[1]
+                value = False
+            else:
+                fluent = parts[0]
+                value = True
             final_state[fluent] = value
     return program, final_state
+
+def compare_final_state_with_goal(final_state, goal):
+    final_state = final_state.get_fluents()
+    for key, value in goal.items():
+        if key not in final_state or final_state[key] != value:
+            return 'No'
+    return 'Yes'
 
 # Parse user inputs
 st.header('Input Section')
@@ -83,6 +95,8 @@ for action_name, action in st.session_state['action_dict'].items():
 # Display program
 st.header('Program')
 st.write(st.session_state['program_dict']['executed_program'])
+st.write("Goal state:") 
+st.json(st.session_state['goals_dict'])
 
 
 # Execute the program
@@ -107,6 +121,10 @@ if st.button('Execute Program'):
         else:
             st.write(f"After {steps['agent']} performs {action.name} state does NOT change: {state}")
     st.write(f"Agents involved in the program: {involved_agents}")
+
+    result = compare_final_state_with_goal(state, st.session_state['goals_dict'])
+    st.write(f'**Answer to after query:** {result}')
+
 
 
 # Display the current state of all fluents in the sidebar
