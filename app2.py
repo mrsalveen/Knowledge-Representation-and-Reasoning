@@ -1,5 +1,6 @@
 import streamlit as st
 from action_language import Action, State
+import itertools
 
 # Initialize session state
 if 'fluent_dict' not in st.session_state:
@@ -12,6 +13,8 @@ if 'program_dict' not in st.session_state:
     st.session_state['program_dict'] = {}
 if 'goals_dict' not in st.session_state:
     st.session_state['goals_dict'] = {}
+if 'current_tab' not in st.session_state:
+    st.session_state['current_tab'] = 'Q1'
 
 def parse_initially_statements(text):
     initial_state = {}
@@ -62,6 +65,21 @@ def parse_after_statements(text):
             final_state[fluent] = value
     return program, final_state
 
+def parse_q2_statements(text):
+    program = []
+    for line in text.split('\n'):
+        if 'involved in' in line:
+            parts = line.split(' involved in')[1]
+            steps = parts.strip().strip('()').split('), (')
+            for step in steps:
+                action, agent = step.split(', ')
+                program.append({'action': action, 'agent': agent})
+         
+            main_agent = line.split(' involved ')[0]
+        else:
+            st.error('Invalid Q2 statement')
+    return program, main_agent
+
 def compare_final_state_with_goal(final_state, goal):
     final_state = final_state.get_fluents()
     for key, value in goal.items():
@@ -75,6 +93,11 @@ st.header('Input Section')
 initially_statements = st.text_area('Enter Initially Statements')
 causes_statements = st.text_area('Enter Causes Statements')
 after_statements = st.text_area('Enter After Statements')
+
+
+
+
+
 
 if st.button('Parse Inputs'):
     st.session_state['fluent_dict'] = parse_initially_statements(initially_statements)
@@ -92,38 +115,120 @@ for action_name, action in st.session_state['action_dict'].items():
     st.write(f'**Action Name:** {action_name}')
     st.json(action)
 
-# Display program
+        # Display program
 st.header('Program')
 st.write(st.session_state['program_dict']['executed_program'])
 st.write("Goal state:") 
 st.json(st.session_state['goals_dict'])
 
 
-# Execute the program
-if st.button('Execute Program'):
-    state = State(st.session_state['fluent_dict'])
-    involved_agents = set()
-    program_data = st.session_state['program_dict']['executed_program']
-    last_fluents = state.get_fluents().copy()
-    st.write("=====================Executing actions======================")
-    st.write(f"Initial state: {state}")
-    for steps in program_data:
-        agent_had_effect = False
-        action = Action(steps['action'], st.session_state['action_dict'][steps['action']]['preconditions'], st.session_state['action_dict'][steps['action']]['effects'], steps['agent'])
-        action.execute(state, steps['agent'])
-        new_fluents = state.get_fluents().copy()
-        if last_fluents != new_fluents:
-            agent_had_effect = True
-            changed_fluents = {key: new_fluents[key] for key in last_fluents if last_fluents[key] != new_fluents[key]}
-        if agent_had_effect:
-            involved_agents.add(steps['agent'])
-            st.write(f"After {steps['agent']} performs {action.name} state changed to: {state}")
-        else:
-            st.write(f"After {steps['agent']} performs {action.name} state does NOT change: {state}")
-    st.write(f"Agents involved in the program: {involved_agents}")
+Q1, Q2 = st.tabs(['Q1', 'Q2'])
 
-    result = compare_final_state_with_goal(state, st.session_state['goals_dict'])
-    st.write(f'**Answer to after query:** {result}')
+with Q1:
+    st.write("**Run program to get answer for Q1: Does condition hold after executing program?**")
+
+    q1_statements = st.text_area('Enter Q1 program')
+
+        # Execute the program
+    if st.button('Execute Program Q1'):
+
+        st.session_state['current_tab'] = 'Q1'
+
+        
+
+        st.session_state['program_dict']['q1_program'], goal_state = parse_after_statements(q1_statements)
+
+        all_fluents = set(st.session_state['fluent_dict'].keys())
+        for action in list(st.session_state['action_dict'].keys()):
+            all_fluents = all_fluents.union(set(st.session_state['action_dict'][action]['effects'].keys()))
+            all_fluents = all_fluents.union(set(st.session_state['action_dict'][action]['preconditions'].keys()))
+        values = [[True, False] for _ in all_fluents]
+        combinations = set(itertools.product(*values))
+        combinations_as_dicts = [dict(zip(all_fluents, combination)) for combination in combinations]
+
+        possible_combs = []
+        final_combs = []
+        st.write("===========================================================")
+        st.write(f"Possible combinations for after statement program : \
+                 {st.session_state['goals_dict']} after {st.session_state['program_dict']['executed_program']}:")
+        
+        for comb in combinations_as_dicts:
+            state = State(comb)
+            program_data = st.session_state['program_dict']['executed_program']
+            last_fluents = state.copy()
+            for steps in program_data:
+                action = Action(steps['action'], st.session_state['action_dict'][steps['action']]['preconditions'], st.session_state['action_dict'][steps['action']]['effects'], steps['agent'])
+                action.execute(state, steps['agent'])
+                new_fluents = state.copy()
+            if compare_final_state_with_goal(new_fluents, st.session_state['goals_dict']) == 'Yes':
+                st.write(f"Possible comb: {last_fluents} ")
+                possible_combs.append(last_fluents)
+
+        st.write("===========================================================")
+        st.write(f"Possible combinations for after statement program : \
+                        {goal_state} after {st.session_state['program_dict']['q1_program']}:")
+        for comb in possible_combs:
+            state = State(comb.get_fluents())
+            program_data = st.session_state['program_dict']['q1_program']
+            last_fluents = state.copy()
+            for steps in program_data:
+                action = Action(steps['action'], st.session_state['action_dict'][steps['action']]['preconditions'], st.session_state['action_dict'][steps['action']]['effects'], steps['agent'])
+                action.execute(state, steps['agent'])
+                new_fluents = state.copy()
+            if compare_final_state_with_goal(new_fluents, goal_state) == 'Yes':
+                st.write(f"Final comb: {new_fluents} ")
+                final_combs.append(new_fluents)
+        if len(final_combs) == len(possible_combs):
+            st.write("=====================Query answer:=====================")
+            st.write(f"**Condition holds after executing the program**")
+        if len(final_combs) == 0:
+            st.write("=====================Query answer:=====================")
+            st.write(f"**Condition does NOT hold after executing the program**")
+        else:
+            st.write("=====================Query answer:=====================")
+            st.write(f"**Condition holds after executing the program for some possible combinations**")
+
+with Q2:
+    st.write("**Run program to get answer for Q2: Was an agent involved in the program?**")
+
+    q2_statements = st.text_area('Enter Q2 program')
+
+    # Execute the program
+    if st.button('Execute Program Q2'):
+        st.session_state['current_tab'] = 'Q2'
+
+        
+
+        st.session_state['program_dict']['q2_program'], main_agent = parse_q2_statements(q2_statements)
+
+
+        
+        state = State(st.session_state['fluent_dict'])
+        involved_agents = set()
+        program_data = st.session_state['program_dict']['q2_program']
+        last_fluents = state.get_fluents().copy()
+        st.write("=====================Executing actions======================")
+        st.write(f"Initial state: {state}")
+        for steps in program_data:
+            agent_had_effect = False
+            action = Action(steps['action'], st.session_state['action_dict'][steps['action']]['preconditions'], st.session_state['action_dict'][steps['action']]['effects'], steps['agent'])
+            action.execute(state, steps['agent'])
+            new_fluents = state.get_fluents().copy()
+            if last_fluents != new_fluents:
+                agent_had_effect = True
+                changed_fluents = {key: new_fluents[key] for key in last_fluents if last_fluents[key] != new_fluents[key]}
+            if agent_had_effect:
+                involved_agents.add(steps['agent'])
+                st.write(f"After {steps['agent']} performs {action.name} state changed to: {state}")
+            else:
+                st.write(f"After {steps['agent']} performs {action.name} state does NOT change: {state}")
+        st.write("=====================Query answer:=====================")
+
+        if str(main_agent) in list(involved_agents):
+            st.write(f"**Agent {main_agent} was involved in the program**")
+        else:
+            st.write(f"**Agent {main_agent} was NOT involved in the program**")
+        st.write("=====================End of actions======================")
 
 
 
