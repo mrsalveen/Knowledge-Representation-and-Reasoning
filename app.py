@@ -98,13 +98,15 @@ def parse_after_statements(text: str) -> tuple[list, dict]:
             parts = line.split(' ')
 
             if 'not' in parts:
+                print("!!!", "'NOT' EXISTS")
                 fluent = parts[1]
                 value = False
             else:
+                print("!!!", "'NOT' DOESNT EXISTS")
                 fluent = parts[0]
                 value = True
             final_state[fluent] = value
-
+    print(">>>", final_state)
     return program, final_state
 
 
@@ -127,6 +129,8 @@ def parse_q2_statements(text: str) -> tuple[list, str]:
 
 def compare_final_state_with_goal(final_state: State, goal: dict) -> str:
     final_state = final_state.get_fluents()
+    print("???", final_state)
+    print("???", goal)
     for key, value in goal.items():
         if key not in final_state or final_state[key] != value:
             return 'No'
@@ -182,7 +186,7 @@ with Q1:
 
         st.session_state['current_tab'] = 'Q1'
 
-        q1_program, goal_state = parse_after_statements(q1_statements)
+        q1_program, goal_q1 = parse_after_statements(q1_statements)
         st.session_state['program_dict']['q1_program'] = q1_program
 
         all_fluents = set(st.session_state['fluent_dict'].keys())
@@ -229,6 +233,7 @@ with Q1:
                 action.execute(state, steps['agent'])
                 new_fluents = state.copy()
 
+            # HERE
             result = compare_final_state_with_goal(
                 new_fluents,
                 st.session_state['goals_dict']
@@ -237,18 +242,22 @@ with Q1:
             if result == 'Yes':
                 st.write(f"Possible comb: {last_fluents} ")
                 possible_combs.append(last_fluents)
+            # It is really stupid!!!
+            # final_combs is always 0 in this moment
+            # And final_combs is zero when 
+            # TODO: results when 'No' never used
 
         # st.write("===========================================================")
         # st.write(f"Possible result combinations for after statement program : \
-                        # {goal_state} after {st.session_state['program_dict']['q1_program']}:")
+                        # {goal_q1} after {st.session_state['program_dict']['q1_program']}:")
 
         for comb in possible_combs:
             state = State(comb.get_fluents())
-            program_data = st.session_state['program_dict']['q1_program']
+            program_q1_data = st.session_state['program_dict']['q1_program']
             last_fluents = state.copy()
 
-            for steps in program_data:
-                action_key = f"{steps['action']} by {steps['agent']}"
+            for steps_q1 in program_q1_data:
+                action_key = f"{steps_q1['action']} by {steps_q1['agent']}"
                 if action_key not in st.session_state['action_dict']:
                     raise ValueError(f"Action '{action_key}' does not exist")
 
@@ -256,20 +265,21 @@ with Q1:
                     action_key,
                     st.session_state['action_dict'][action_key]['preconditions'],
                     st.session_state['action_dict'][action_key]['effects'],
-                    steps['agent']
+                    steps_q1['agent']
                     )
 
-                action.execute(state, steps['agent'])
-                new_fluents = state.copy()
+                action.execute(state, steps_q1['agent'])
+                new_fluents_q1 = state.copy()
 
-            if compare_final_state_with_goal(new_fluents, goal_state) == 'Yes':
-                st.write(f"Final comb: {new_fluents} ")
-                final_combs.append(new_fluents)
+            if compare_final_state_with_goal(new_fluents_q1, goal_q1) == 'Yes':
+                # print("OH YESSSZ")  # nie wykonuje się i tak xd
+                st.write(f"Final comb: {new_fluents_q1} ")
+                final_combs.append(new_fluents_q1)
 
         if len(final_combs) == len(possible_combs):
-            st.write("**YES**")
+            st.write("**YES Q1**")
         elif len(final_combs) == 0:
-            st.write("**NO**")
+            st.write("**NO Q1**")
         else:
             st.write("**Condition holds after executing the program for some possible combinations**")
 
