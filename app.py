@@ -95,17 +95,21 @@ def parse_after_statements(text: str) -> tuple[list, dict]:
             else:
                 program = []
 
-            parts = line.split(' ')
+            parts = line.split('holds after ')[0]
+            goal_fluents = parts.split(',')
+            print(goal_fluents)
+            for goal in goal_fluents:
+                parts = goal.split(' ')
+                if 'not' in parts:
 
-            if 'not' in parts:
-                print("!!!", "'NOT' EXISTS")
-                fluent = parts[1]
-                value = False
-            else:
-                print("!!!", "'NOT' DOESNT EXISTS")
-                fluent = parts[0]
-                value = True
-            final_state[fluent] = value
+                    fluent = parts[1]
+                    value = False
+                else:
+                    goal = goal.replace(" ","")
+                    fluent = goal
+                    value = True
+                final_state[fluent] = value
+
     print(">>>", final_state)
     return program, final_state
 
