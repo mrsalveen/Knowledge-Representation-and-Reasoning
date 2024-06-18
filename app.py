@@ -37,7 +37,7 @@ def parse_initially_statements(text):
             if fluent in initial_state and initial_state[fluent] != value:
                 msg = f"Contradictory statements for fluent '{fluent}': "
                 msg += "cannot be both true and false"
-                raise ValueError(msg)
+                st.error(msg)
 
             initial_state[fluent] = value
     return initial_state
