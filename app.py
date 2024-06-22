@@ -144,10 +144,10 @@ def compare_final_state_with_goal(final_state: State, goal: dict) -> str:
 # Parse user inputs
 st.header('Input Section')
 
-initially_statements = st.text_area('Enter Initially Statements', value='initially alive')
-causes_statements = st.text_area('Enter Causes Statements', value='shoot by Fred causes not alive if loaded\nskip by Bob causes alive')
-after_statements = st.text_area('Enter After Statements', value='not alive holds after ((skip, Bob), (shoot, Fred))')
-
+initially_statements = st.text_area('Enter Initially Statements', placeholder='initially alive')
+causes_statements = st.text_area('Enter Causes Statements', placeholder='shoot by Fred causes not alive if loaded\nskip by Bob causes alive')
+after_statements = st.text_area('Enter After Statements', placeholder='not alive holds after ((skip, Bob), (shoot, Fred))')
+st.write("Note: To remove all the input, reload the page (F5 button on keyboard)")
 
 # if st.button('Parse Inputs'):
 #     st.session_state['fluent_dict'] = parse_initially_statements(initially_statements)
@@ -183,10 +183,10 @@ with Q1:
     msg += "Does condition hold after executing program?**"
     st.write(msg)
 
-    q1_statements = st.text_area('Enter Q1 program', value='loaded holds after ((skip, Bob))')
-
+    q1_statements = st.text_area('Enter Q1 program', placeholder='loaded holds after ((skip, Bob))')
+    col1, col2 = st.columns(2)
     # Execute the program
-    if st.button('Execute Program Q1'):
+    if col1.button('Execute Program Q1'):
         st.session_state['fluent_dict'] = parse_initially_statements(initially_statements)
         st.session_state['action_dict'] = parse_causes_statements(causes_statements)
 
@@ -318,11 +318,11 @@ with Q1:
                 st.write("**NO**")
             else:
                 st.write("**Condition holds after executing the program for some possible combinations**")
-
+    
 with Q2:
     st.write("**Run program to get answer for Q2: Was an agent involved in the program?**")
 
-    q2_statements = st.text_area('Enter Q2 program', value='Bob involved in (skip, Bob)')
+    q2_statements = st.text_area('Enter Q2 program', placeholder='Bob involved in (skip, Bob)')
 
     # Execute the program
     if st.button('Execute Program Q2'):
