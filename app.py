@@ -366,8 +366,8 @@ with Q2:
         state = State(st.session_state['fluent_dict'])
         involved_agents = set()
         program_data = st.session_state['program_dict']['q2_program']
-        last_fluents = state.get_fluents().copy()
         for steps in program_data:
+            last_fluents = state.get_fluents().copy()
             action_key = f"{steps['action']} by {steps['agent']}"
 
             if action_key not in list(st.session_state['action_dict'].keys()):
