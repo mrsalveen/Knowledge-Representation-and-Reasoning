@@ -65,7 +65,7 @@ def parse_causes_statements(text):
 
             for agent in agents:
                 action_key = f"{action} by {agent}"
-                actions[action_key] = {
+                action_value = {
                     'effects': {
                         effect.replace('not ', ''): not ('not' in effect)
                         for effect in effects
@@ -76,6 +76,14 @@ def parse_causes_statements(text):
                         },
                     'agents': agent
                     }
+                if action_key in actions.keys():
+                    if action_value['preconditions'] == actions[action_key]['preconditions'] and \
+                            action_value['effects'] != actions[action_key]['effects'] or \
+                            action_value['preconditions'] != actions[action_key]['preconditions'] and \
+                                action_value['effects'] == actions[action_key]['effects']:
+                        raise ValueError(f"Contradictory effects for action '{action_key}'")
+                actions[action_key] = action_value
+                
 
     return actions
 
