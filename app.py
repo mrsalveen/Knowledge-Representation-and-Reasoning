@@ -71,16 +71,17 @@ def parse_causes_statements(text):
                         for effect in effects
                         },
                     'preconditions': {
-                        precondition.replace('not ', ''): not ('not' in precondition)
-                        for precondition in preconditions
+                        precondition.replace('not ', ''): not ('not' in precondition) for precondition in preconditions
                         },
                     'agents': agent
                     }
                 if action_key in actions.keys():
-                    if action_value['preconditions'] == actions[action_key]['preconditions'] and \
-                            action_value['effects'] != actions[action_key]['effects'] or \
-                            action_value['preconditions'] != actions[action_key]['preconditions'] and \
-                                action_value['effects'] == actions[action_key]['effects']:
+                    # TODO: remove false, and check so that precondition is 
+                    # not just not equal to, but should be same but with negation
+                    if False and (action_value['preconditions'] == actions[action_key]['preconditions'] and \
+                            action_value['effects'] != actions[action_key]['effects']) or \
+                            (action_value['preconditions'] != actions[action_key]['preconditions'] and \
+                                action_value['effects'] == actions[action_key]['effects']):
                         st.error(f"Contradictory effects for action '{action_key}'")
                 actions[action_key] = action_value
                 
