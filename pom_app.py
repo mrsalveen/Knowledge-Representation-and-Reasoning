@@ -174,21 +174,21 @@ st.write("Note: To remove all the input, reload the page (F5 button on keyboard)
 
 #     st.success('Statements parsed successfully!')
 
-    # # Display fluents
-    # st.header('Fluents')
-    # st.write(st.session_state['fluent_dict'])
+    # Display fluents
+st.header('Fluents')
+st.write(st.session_state['fluent_dict'])
 
-# Display actions
-# st.header('Actions')
-# for action_name, action in st.session_state['action_dict'].items():
-#     st.write(f'**Action Name:** {action_name}')
-#     st.json(action)
+#Display actions
+st.header('Actions')
+for action_name, action in st.session_state['action_dict'].items():
+    st.write(f'**Action Name:** {action_name}')
+    st.json(action)
 
     # # Display program
-    # st.header('After statement')
-    # st.write(st.session_state['program_dict']['executed_program'])
-    # st.write("Goal state:") 
-    # st.json(st.session_state['goals_dict'])
+st.header('After statement')
+st.write(st.session_state['program_dict']['executed_program'])
+st.write("Goal state:") 
+st.json(st.session_state['goals_dict'])
 
 
 Q1, Q2 = st.tabs(['Q1', 'Q2'])
@@ -330,13 +330,14 @@ with Q1:
                     # print("OH YESSSZ")  # nie wykonuje się i tak xd
                     # st.write(f"Final comb: {new_fluents_q1} ")
                     final_combs.append(new_fluents_q1)
-
+            print(f'possible combs: {possible_combs}')
+            print(f'final combs: {final_combs}')
             if len(final_combs) == len(possible_combs):
                 st.write("**YES**")
             elif len(final_combs) == 0:
                 st.write("**NO**")
-            # else:
-                # st.write("**Condition holds after executing the program for some possible combinations**")
+            else:
+                st.write("**Not enough information to answer query**")
     
 with Q2:
     st.write("**Run program to get answer for Q2: Was an agent involved in the program?**")
