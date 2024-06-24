@@ -175,20 +175,20 @@ st.write("Note: To remove all the input, reload the page (F5 button on keyboard)
 #     st.success('Statements parsed successfully!')
 
     # Display fluents
-st.header('Fluents')
-st.write(st.session_state['fluent_dict'])
+# st.header('Fluents')
+# st.write(st.session_state['fluent_dict'])
 
-#Display actions
-st.header('Actions')
-for action_name, action in st.session_state['action_dict'].items():
-    st.write(f'**Action Name:** {action_name}')
-    st.json(action)
+# #Display actions
+# st.header('Actions')
+# for action_name, action in st.session_state['action_dict'].items():
+#     st.write(f'**Action Name:** {action_name}')
+#     st.json(action)
 
-    # # Display program
-st.header('After statement')
-st.write(st.session_state['program_dict']['executed_program'])
-st.write("Goal state:") 
-st.json(st.session_state['goals_dict'])
+#     # # Display program
+# st.header('After statement')
+# st.write(st.session_state['program_dict']['executed_program'])
+# st.write("Goal state:") 
+# st.json(st.session_state['goals_dict'])
 
 
 Q1, Q2 = st.tabs(['Q1', 'Q2'])
