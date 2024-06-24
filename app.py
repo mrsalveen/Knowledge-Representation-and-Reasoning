@@ -38,6 +38,7 @@ def parse_initially_statements(text):
                 msg = f"Contradictory statements for fluent '{fluent}': "
                 msg += "cannot be both true and false"
                 st.error(msg)
+                raise ValueError(msg)
 
             initial_state[fluent] = value
     return initial_state
@@ -78,11 +79,21 @@ def parse_causes_statements(text):
                 if action_key in actions.keys():
                     # TODO: remove false, and check so that precondition is 
                     # not just not equal to, but should be same but with negation
-                    if False and (action_value['preconditions'] == actions[action_key]['preconditions'] and \
-                            action_value['effects'] != actions[action_key]['effects']) or \
-                            (action_value['preconditions'] != actions[action_key]['preconditions'] and \
-                                action_value['effects'] == actions[action_key]['effects']):
-                        st.error(f"Contradictory effects for action '{action_key}'")
+                    for effect_key in actions[action_key]['effects'].keys():
+                        if (actions[action_key]['effects'][effect_key] != action_value['effects'][effect_key] and \
+                                actions[action_key]['preconditions'] == action_value['preconditions']):
+                            st.error(f"Contradictory effects for action '{action_key}'")
+                            raise ValueError(f"Contradictory effects for action '{action_key}'")
+                    for precondition_key in actions[action_key]['preconditions'].keys():
+                        if (actions[action_key]['preconditions'][precondition_key] != action_value['preconditions'][precondition_key] and \
+                                actions[action_key]['effects'] == action_value['effects']):
+                            st.error(f"Contradictory preconditions for action '{action_key}'")
+                            raise ValueError(f"Contradictory preconditions for action '{action_key}'")
+                    # if (action_value['preconditions'] == actions[action_key]['preconditions'] and \
+                    #         action_value['effects'] != actions[action_key]['effects']) or \
+                    #         (action_value['preconditions'] != actions[action_key]['preconditions'] and \
+                    #             action_value['effects'] == actions[action_key]['effects']):
+                        # st.error(f"Contradictory effects for action '{action_key}'")
                 actions[action_key] = action_value
                 
 
@@ -153,12 +164,12 @@ def compare_final_state_with_goal(final_state: State, goal: dict) -> str:
 # Parse user inputs
 st.header('Input Section')
 
-initially_statements = st.text_area('Enter Initially Statements', placeholder='initially alive')
-causes_statements = st.text_area('Enter Causes Statements', placeholder='shoot by Fred causes not alive if loaded\nskip by Bob causes alive')
-after_statements = st.text_area('Enter After Statements', placeholder='not alive holds after ((skip, Bob), (shoot, Fred))')
-# initially_statements = st.text_area('Enter Initially Statements', value='initially alive')
-# causes_statements = st.text_area('Enter Causes Statements', value='shoot by Fred causes not alive if loaded\nskip by Bob causes alive')
-# after_statements = st.text_area('Enter After Statements', value='not alive holds after ((skip, Bob), (shoot, Fred))')
+# initially_statements = st.text_area('Enter Initially Statements', placeholder='initially alive')
+# causes_statements = st.text_area('Enter Causes Statements', placeholder='shoot by Fred causes not alive if loaded\nskip by Bob causes alive')
+# after_statements = st.text_area('Enter After Statements', placeholder='not alive holds after ((skip, Bob), (shoot, Fred))')
+initially_statements = st.text_area('Enter Initially Statements', value='initially alive')
+causes_statements = st.text_area('Enter Causes Statements', value='shoot by Fred causes not alive if loaded\nskip by Bob causes alive')
+after_statements = st.text_area('Enter After Statements', value='not alive holds after ((skip, Bob), (shoot, Fred))')
 
 st.write("Note: To remove all the input, reload the page (F5 button on keyboard)")
 
@@ -196,8 +207,8 @@ with Q1:
     msg += "Does condition hold after executing program?**"
     st.write(msg)
 
-    q1_statements = st.text_area('Enter Q1 program', placeholder='loaded holds after ((skip, Bob))')
-    # q1_statements = st.text_area('Enter Q1 program', value='loaded holds after ((skip, Bob))')
+    # q1_statements = st.text_area('Enter Q1 program', placeholder='loaded holds after ((skip, Bob))')
+    q1_statements = st.text_area('Enter Q1 program', value='loaded holds after ((skip, Bob))')
     col1, col2 = st.columns(2)
     # Execute the program
     if col1.button('Execute Program Q1'):
@@ -330,14 +341,14 @@ with Q1:
                 st.write("**YES**")
             elif len(final_combs) == 0:
                 st.write("**NO**")
-            else:
-                st.write("**Condition holds after executing the program for some possible combinations**")
+            # else:
+                # st.write("**Condition holds after executing the program for some possible combinations**")
     
 with Q2:
     st.write("**Run program to get answer for Q2: Was an agent involved in the program?**")
 
-    q2_statements = st.text_area('Enter Q2 program', placeholder='Bob involved in (skip, Bob)')
-    # q2_statements = st.text_area('Enter Q2 program', value='Bob involved in (skip, Bob)')
+    # q2_statements = st.text_area('Enter Q2 program', placeholder='Bob involved in (skip, Bob)')
+    q2_statements = st.text_area('Enter Q2 program', value='Bob involved in (skip, Bob)')
 
     # Execute the program
     if st.button('Execute Program Q2'):
