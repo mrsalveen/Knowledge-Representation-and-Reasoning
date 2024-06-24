@@ -81,7 +81,7 @@ def parse_causes_statements(text):
                             action_value['effects'] != actions[action_key]['effects'] or \
                             action_value['preconditions'] != actions[action_key]['preconditions'] and \
                                 action_value['effects'] == actions[action_key]['effects']:
-                        raise ValueError(f"Contradictory effects for action '{action_key}'")
+                        st.error(f"Contradictory effects for action '{action_key}'")
                 actions[action_key] = action_value
                 
 
