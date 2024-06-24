@@ -4,6 +4,9 @@ class State:
 
     def get_fluent_value(self, name):
         return self.fluents.get(name, None)
+    
+    def get_fluent(self, fluent):
+        return self.fluents[fluent]
 
     def update_fluent(self, name, value):
         self.fluents[name] = value
